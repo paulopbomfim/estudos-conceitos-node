@@ -37,23 +37,83 @@ app.post('/users', checksExistsUserAccount, (request, response) => {
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const userFound = users.find((user) => user.username === username);
+
+  response.status(200).send(userFound.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const { title, deadline } = request.body;
+
+  const id = uuidv4();
+
+  const userFound = users.find((user) => user.username === username);
+
+  userFound.todos.push({
+    id,
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date
+  });
+
+  response.status(201).send(userFound.todos.find(( todo ) => todo.id === id))
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params;
+  const { username } = request.headers;
+  const { title, deadline } = request.body;
+
+  const userFound = users.find(( user ) => user.username === username);
+  
+  const taskAlreadyExists = userFound.todos.some(( task ) => task.id === id )
+  if (!taskAlreadyExists) {
+    return response.status(404).send({ error: 'Task not found' });
+  }
+
+  const taskFound = userFound.todos.find(( task ) => task.id === id);
+
+  taskFound.title = title;
+  taskFound.deadline = new Date(deadline);
+
+  return response.status(200).send(taskFound);
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params;
+  const { username } = request.headers;
+
+  const userFound = users.find(( user ) => user.username === username);
+  
+  const taskAlreadyExists = userFound.todos.some(( task ) => task.id === id )
+  if (!taskAlreadyExists) {
+    return response.status(404).send({ error: 'Task not found' });
+  };
+
+  const taskFound = userFound.todos.find(( task ) => task.id === id);
+
+  taskFound.done = !taskFound.done;
+
+  return response.status(200).send(taskFound);
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params;
+  const { username } = request.headers;
+
+  const userFound = users.find(( user ) => user.username === username);
+  
+  const taskAlreadyExists = userFound.todos.some(( task ) => task.id === id )
+  if (!taskAlreadyExists) {
+    return response.status(404).send({ error: 'Task not found' });
+  };
+
+  userFound.todos = userFound.todos.filter(( task ) => task.id !== id);
+
+  return response.status(204).send(userFound);
 });
 
 module.exports = app;
