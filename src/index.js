@@ -44,7 +44,22 @@ app.get('/todos', checksExistsUserAccount, (request, response) => {
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const { title, deadline } = request.body;
+
+  const id = uuidv4();
+
+  const userFound = users.find((user) => user.username === username);
+
+  userFound.todos.push({
+    id,
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date
+  });
+
+  response.status(201).send(userFound.todos.find(( todo ) => todo.id === id))
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
