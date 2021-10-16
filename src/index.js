@@ -63,7 +63,23 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params;
+  const { username } = request.headers;
+  const { title, deadline } = request.body;
+
+  const userFound = users.find(( user ) => user.username === username);
+  
+  const taskAlreadyExists = userFound.todos.some(( task ) => task.id === id )
+  if (!taskAlreadyExists) {
+    return response.status(404).send({ error: 'Task not found' });
+  }
+
+  const taskFound = userFound.todos.find(( task ) => task.id === id);
+
+  taskFound.title = title;
+  taskFound.deadline = new Date(deadline);
+
+  return response.status(200).send(taskFound);
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
